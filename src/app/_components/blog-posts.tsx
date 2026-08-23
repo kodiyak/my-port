@@ -34,14 +34,7 @@ export default function BlogPosts({ posts }: { posts: PostMetadata[] }) {
         {groupedPosts.map(({ year, posts }) => (
           <div className="flex border-b" key={`year.${year}`}>
             <div className="w-32 pl-4 pt-2">
-              <span
-                className={cn(
-                  "text-sm font-mono",
-                  wrapMouseEnter.isOpen
-                    ? "text-muted-foreground opacity-50"
-                    : "",
-                )}
-              >
+              <span className={cn("text-sm font-mono text-muted-foreground")}>
                 {year}
               </span>
             </div>
@@ -56,7 +49,7 @@ export default function BlogPosts({ posts }: { posts: PostMetadata[] }) {
                     className={cn(
                       "flex h-10 text-sm items-center pr-4 border-b last-of-type:border-b-0",
                       wrapMouseEnter.isOpen
-                        ? "text-muted-foreground opacity-50 hover:text-foreground hover:opacity-100"
+                        ? "text-muted-foreground hover:text-foreground"
                         : "",
                     )}
                     href={post.slug}
