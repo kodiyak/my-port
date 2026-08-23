@@ -6,6 +6,7 @@ import * as runtime from "react/jsx-runtime";
 import rehypePrettyCode from "rehype-pretty-code";
 import remarkGfm from "remark-gfm";
 import { z } from "zod";
+import { getMDXComponents } from "@/components/mdx-components";
 
 const POST_TYPES = ["blog", "notes"] as const;
 export type PostType = (typeof POST_TYPES)[number];
@@ -86,6 +87,7 @@ export async function renderMDX(folder: string, slug: string) {
 
   const { default: MDXComponent } = await evaluate(content, {
     ...runtime,
+    useMDXComponents: () => getMDXComponents({}),
     remarkPlugins: [remarkGfm],
     rehypePlugins: [
       [

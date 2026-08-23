@@ -1,7 +1,13 @@
-"use client";
+import { renderMDX } from "@/lib/mdx";
 
-import type { ComponentType } from "react";
+export async function MDXRenderer({
+  folder,
+  slug,
+}: {
+  folder: string;
+  slug: string;
+}) {
+  const { Component } = await renderMDX(folder, slug);
 
-export function MDXRenderer({ Component }: { Component: ComponentType }) {
   return <Component />;
 }

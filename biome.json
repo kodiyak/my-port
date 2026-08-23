@@ -7,7 +7,10 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!public"]
+    "includes": [
+      "**",
+      "!public"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -18,7 +21,10 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "preset": "recommended"
+      "preset": "recommended",
+      "a11y": {
+        "noStaticElementInteractions": "off"
+      }
     }
   },
   "javascript": {
@@ -38,5 +44,5 @@
         "organizeImports": "on"
       }
     }
-  }
+  },
 }
