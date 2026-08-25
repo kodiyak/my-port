@@ -32,7 +32,7 @@ export default function BlogPosts({ posts }: { posts: PostMetadata[] }) {
         onMouseLeave={wrapMouseEnter.onClose}
       >
         {groupedPosts.map(({ year, posts }) => (
-          <div className="flex border-b" key={`year.${year}`}>
+          <div className="flex border-b border-dashed" key={`year.${year}`}>
             <div className="w-32 pl-4 pt-2">
               <span className={cn("text-sm font-mono text-muted-foreground")}>
                 {year}
@@ -47,7 +47,7 @@ export default function BlogPosts({ posts }: { posts: PostMetadata[] }) {
                   <Link
                     key={`post.${post.slug}`}
                     className={cn(
-                      "flex h-10 text-sm items-center pr-4 border-b last-of-type:border-b-0",
+                      "flex h-10 text-sm items-center pr-4 border-b border-dashed last-of-type:border-b-0",
                       wrapMouseEnter.isOpen
                         ? "text-muted-foreground hover:text-foreground"
                         : "",

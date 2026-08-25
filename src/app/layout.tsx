@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import AppFooter from "@/components/app-footer";
+import AppHeader from "@/components/app-header";
 import { cn } from "@/lib/utils";
 
 const geistSans = Geist({
@@ -28,7 +30,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         "dark antialiased font-sans",
       )}
     >
-      <body className="bg-background text-foreground">{children}</body>
+      <body className="bg-background text-foreground flex flex-col min-h-screen">
+        <AppHeader />
+        {children}
+        <AppFooter />
+      </body>
     </html>
   );
 }

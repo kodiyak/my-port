@@ -1,6 +1,7 @@
 import type { MDXComponents } from "mdx/types";
 import Image, { type ImageProps } from "next/image";
 import Link from "next/link";
+import { Separator } from "./ui/separator";
 
 export function getMDXComponents(components: MDXComponents): MDXComponents {
   return {
@@ -16,13 +17,15 @@ export function getMDXComponents(components: MDXComponents): MDXComponents {
         {...(props as ImageProps)}
       />
     ),
-    h1: (props) => <h1 className="text-4xl font-bold" {...props} />,
-    h2: (props) => <h2 className="text-3xl font-bold" {...props} />,
-    h3: (props) => <h3 className="text-2xl font-bold" {...props} />,
-    h4: (props) => <h4 className="text-xl font-bold" {...props} />,
-    h5: (props) => <h5 className="text-lg font-bold" {...props} />,
-    h6: (props) => <h6 className="text-base font-bold" {...props} />,
-    p: (props) => <p className="min-h-6" {...props} />,
+    h1: (props) => <h1 className="text-xl mb-2 font-bold" {...props} />,
+    h2: (props) => <h2 className="text-lg mb-2 font-bold" {...props} />,
+    h3: (props) => <h3 className="text-base mb-2 font-bold" {...props} />,
+    p: (props) => <p className="min-h-6 text-sm" {...props} />,
+    hr: (props) => (
+      <div className="px-8 py-6">
+        <Separator {...props} />
+      </div>
+    ),
     ...components,
   };
 }
