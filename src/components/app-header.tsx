@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ToggleMode from "./toggle-mode";
 
 export default function AppHeader() {
   const username = "mathews536";
@@ -13,6 +14,10 @@ export default function AppHeader() {
           >
             {`@${username}`}
           </Link>
+          <div className="flex-1 flex">
+            <div className="flex-1"></div>
+            <ToggleMode />
+          </div>
         </div>
       </div>
     </div>

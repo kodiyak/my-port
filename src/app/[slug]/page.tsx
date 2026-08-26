@@ -24,7 +24,11 @@ export default async function Page({ params }: PageProps<"/[slug]">) {
       <div className="flex flex-col">
         <div className="flex flex-col max-w-xl min-h-dvh border-x w-full mx-auto">
           <div className="h-14 border-b flex items-center px-8">
-            <Button variant={"outline"} render={<Link href={"/"} />}>
+            <Button
+              variant={"outline"}
+              render={<Link href={"/"} />}
+              nativeButton={false}
+            >
               <ArrowLeftIcon />
               <span>Voltar</span>
             </Button>
