@@ -18,12 +18,19 @@ export function getMDXComponents(components: MDXComponents): MDXComponents {
         {...(props as ImageProps)}
       />
     ),
-    h1: (props) => <h1 className="text-base mt-6 mb-2 font-bold" {...props} />,
-    h2: (props) => <h2 className="text-base mt-5 mb-2 font-bold" {...props} />,
+    h1: (props) => <h1 className="text-xl mt-6 mb-2 font-bold" {...props} />,
+    h2: (props) => <h2 className="text-lg mt-5 mb-2 font-bold" {...props} />,
     h3: (props) => <h3 className="text-base mt-4 mb-2 font-bold" {...props} />,
-    p: (props) => <p className="min-h-6 text-xs" {...props} />,
+    p: (props) => (
+      <p className="min-h-6 font-light text-base mb-2" {...props} />
+    ),
+    b: (props) => <b className="font-bold" {...props} />,
+    strong: (props) => <strong className="font-bold" {...props} />,
     li: (props) => (
-      <li className={cn("text-sm ", "list-disc list-inside")} {...props} />
+      <li
+        className={cn("text-base font-light", "list-disc list-inside")}
+        {...props}
+      />
     ),
     hr: (props) => (
       <div className="px-8 py-6">

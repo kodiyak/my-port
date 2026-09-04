@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AppFooter from "@/components/app-footer";
 import AppHeader from "@/components/app-header";
@@ -15,6 +15,10 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+const fontSerif = Fraunces({
+  variable: "--font-serif",
+  weight: ["200", "400", "800"],
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -28,6 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={cn(
         geistSans.variable,
         geistMono.variable,
+        fontSerif.variable,
         "dark antialiased font-sans",
       )}
       suppressHydrationWarning
