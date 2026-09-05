@@ -7,6 +7,7 @@ import rehypePrettyCode from "rehype-pretty-code";
 import remarkGfm from "remark-gfm";
 import { z } from "zod";
 import { getMDXComponents } from "@/components/mdx-components";
+import { CONTENT_PATH, PROJECTS_PATH } from "@/lib/content";
 
 const POST_TYPES = ["blog", "notes"] as const;
 export type PostType = (typeof POST_TYPES)[number];
@@ -23,8 +24,6 @@ const PostMetadataSchema = z.looseObject({
   order: z.number().optional(),
 });
 export type PostMetadata = z.infer<typeof PostMetadataSchema>;
-
-const CONTENT_PATH = path.join(process.cwd(), "src", "content");
 
 // Extrai o slug do nome do arquivo, ignorando o prefixo numérico de ordenação.
 // Ex.: "001-manifest.mdx" -> "manifest"; "first-post.mdx" -> "first-post".
@@ -73,7 +72,7 @@ export async function getPosts(folder: PostType): Promise<PostMetadata[]> {
       if (orderDiff !== 0) return orderDiff;
       return (b.date?.getTime() || 0) - (a.date?.getTime() || 0);
     });
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }
@@ -94,6 +93,27 @@ export async function getPost(slug: string) {
   return post;
 }
 
+// Avalia um source MDX com a mesma configuração de componentes, remark e
+// rehype usada em todo o site.
+async function evaluateMDX(source: string) {
+  const { default: MDXComponent } = await evaluate(source, {
+    ...runtime,
+    useMDXComponents: () => getMDXComponents({}),
+    remarkPlugins: [remarkGfm],
+    rehypePlugins: [
+      [
+        rehypePrettyCode,
+        {
+          theme: "github-dark",
+          keepBackground: false,
+        },
+      ],
+    ],
+  });
+
+  return MDXComponent;
+}
+
 export async function renderMDX(folder: string, slug: string) {
   const dirPath = path.join(CONTENT_PATH, folder);
 
@@ -112,23 +132,20 @@ export async function renderMDX(folder: string, slug: string) {
   const fileContent = await fs.readFile(filePath, "utf-8");
   const { content, data } = matter(fileContent);
 
-  const { default: MDXComponent } = await evaluate(content, {
-    ...runtime,
-    useMDXComponents: () => getMDXComponents({}),
-    remarkPlugins: [remarkGfm],
-    rehypePlugins: [
-      [
-        rehypePrettyCode,
-        {
-          theme: "github-dark",
-          keepBackground: false,
-        },
-      ],
-    ],
-  });
+  return {
+    Component: await evaluateMDX(content),
+    frontmatter: data,
+  };
+}
+
+// Renderiza o index.mdx de um projeto (content/projects/<slug>/index.mdx).
+export async function renderProjectMDX(slug: string) {
+  const filePath = path.join(PROJECTS_PATH, slug, "index.mdx");
+  const fileContent = await fs.readFile(filePath, "utf-8");
+  const { content, data } = matter(fileContent);
 
   return {
-    Component: MDXComponent,
+    Component: await evaluateMDX(content),
     frontmatter: data,
   };
 }

@@ -1,16 +1,19 @@
 import Link from "next/link";
 import MyPictures from "@/components/me/my-pictures";
 import { getPosts } from "@/lib/mdx";
+import { getProjects } from "@/lib/projects";
 import ArrowsDown from "./_components/arrows-down";
 import BlogPosts from "./_components/blog-posts";
 import Intro from "./_components/intro";
 import NotesPosts from "./_components/notes-posts";
+import ProjectsPosts from "./_components/projects-posts";
 import { MiniTitle } from "./_components/shared";
 
 export default async function Home() {
-  const [posts, notes] = await Promise.all([
+  const [posts, notes, projects] = await Promise.all([
     getPosts("blog"),
     getPosts("notes"),
+    getProjects(),
   ]);
 
   return (
@@ -38,6 +41,8 @@ export default async function Home() {
           Pictures
         </MiniTitle>
         <MyPictures />
+        <MiniTitle className="border-t">Projects</MiniTitle>
+        <ProjectsPosts projects={projects} />
         <MiniTitle className="border-t">Notes</MiniTitle>
         <NotesPosts posts={notes} />
         <MiniTitle className="border-t">Blog</MiniTitle>
