@@ -7,7 +7,12 @@ import { Separator } from "./ui/separator";
 export function getMDXComponents(components: MDXComponents): MDXComponents {
   return {
     a: ({ href, children, ...props }) => (
-      <Link href={href || "#"} {...props}>
+      <Link
+        href={href || "#"}
+        className="font-normal text-muted-foreground hover:text-foreground underline"
+        target={"_blank"}
+        {...props}
+      >
         {children}
       </Link>
     ),
@@ -26,6 +31,15 @@ export function getMDXComponents(components: MDXComponents): MDXComponents {
     ),
     b: (props) => <b className="font-bold" {...props} />,
     strong: (props) => <strong className="font-bold" {...props} />,
+    pre: (props) => (
+      <pre
+        className={cn(
+          "bg-background font-mono text-muted-foreground text-sm mt-2 mb-6 -mx-8 py-2 px-8 overflow-x-auto",
+          "border-y border-dashed",
+        )}
+        {...props}
+      />
+    ),
     li: (props) => (
       <li
         className={cn("text-base font-light", "list-disc list-inside")}
@@ -39,7 +53,7 @@ export function getMDXComponents(components: MDXComponents): MDXComponents {
     ),
     blockquote: (props) => (
       <blockquote
-        className="border-l-2 text-muted-foreground pl-4 text-sm mb-4 italic"
+        className="border-l-2 text-muted-foreground pl-4 mb-4 italic [&_p]:text-sm!"
         {...props}
       />
     ),

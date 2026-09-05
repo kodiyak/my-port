@@ -33,7 +33,7 @@ export default function Intro() {
                   className="size-24 rounded-lg object-cover"
                 />
               </div>
-              <div className="flex flex-col flex-1">
+              <div className="flex flex-col flex-1 [&_p]:leading-relaxed [&_p]:font-serif">
                 <MDXRenderer folder={"shared"} slug={`intro-${lang}`} />
               </div>
             </div>

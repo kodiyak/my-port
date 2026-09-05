@@ -1,4 +1,5 @@
 import SocialLinks from "./social-links";
+import ToggleMode from "./toggle-mode";
 
 export default function AppFooter() {
   return (
@@ -7,6 +8,9 @@ export default function AppFooter() {
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col items-start gap-2 px-6 py-4">
             <SocialLinks />
+          </div>
+          <div className="flex flex-col justify-end items-end p-2">
+            <ToggleMode />
           </div>
         </div>
       </div>

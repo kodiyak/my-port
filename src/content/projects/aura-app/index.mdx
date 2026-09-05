@@ -42,15 +42,15 @@ IA na borda, não no centro.
 
 Decisões que saíram daí:
 
-- **Duas abas, e só duas**: Pedidos | Financeiro. O negócio inteiro responde
-  a duas perguntas — "o que está em andamento?" e "quanto está em aberto?".
-- **SPA com Next.js**: um deploy, abre no navegador do celular, toda abertura
-  já é a versão nova. Go-live rápido, distribuição simples, nada de loja.
-- **Sem login, de propósito**: o uso é auto-hospedado — quem hospeda já
-  controla o acesso. Autenticação, se um dia precisar, entra como camada.
+- **Duas abas**: Pedidos | Financeiro. 
+  > O negócio inteiro responde a duas perguntas — "o que está em andamento?" e "quanto está em aberto?".
+- **SPA com Next.js**: um deploy, abre no navegador do celular, toda abertura já é a versão nova. 
+  > Go-live rápido, distribuição simples, nada de loja.
+- **Sem login**: o uso é auto-hospedado — quem hospeda já controla o acesso. 
+  > Autenticação, se um dia precisar, entra como camada.
 - **PWA**: instala como app na tela inicial do celular.
-- Catálogo por cliente, preço congelado no pedido (mudou catálogo, pedido
-  antigo não muda), número sequencial por ano, PDF, extrato mensal.
+- **Catálogo por cliente**: preço congelado no pedido.
+  > Mudou catálogo, pedido antigo não muda, número sequencial por ano, PDF, extrato mensal.
 
 Nada disso é revolucionário. Juntos, aposentam o caderno.
 
@@ -58,16 +58,38 @@ Nada disso é revolucionário. Juntos, aposentam o caderno.
 
 Arquitetura e modelagem funcionaram como um **trilho para a IA**:
 
-- regra de negócio separada das rotas (rota só valida e delega);
-- dinheiro como inteiro em centavos — sem ponto flutuante;
+- **regra de negócio separada das rotas** — rota só valida e delega;
+- **dinheiro como inteiro em centavos** — sem ponto flutuante;
 - **ledger imutável**: nenhuma transação se apaga; correção é linha nova;
-- "pago" é consequência, não clique: pagamento entra → sistema reconcilia →
-  marca os pedidos como pagos, em ordem;
-- cancelar pedido pago vira estorno no histórico — nada some.
+- **pago via reconciliação**: pagamento entra → sistema reconcilia → marca os pedidos como pagos, em ordem;
+- **cancelar pedido pago vira estorno no histórico** — nada some.
 
 ```
-foto do romaneio → rascunho → concluir (cobra) → pagamento → pago
-cancelou? → estorno (histórico íntegro)
++---+
+| 1 |  foto do romaneio
++---+
+  |
+  v
++---+
+| 2 |  rascunho
++---+
+  |
+  v
++---+
+| 3 |  concluir (cobra)
++---+
+  |
+  v
++---+
+| 4 |  pagamento
++---+
+  |
+  v
++---+
+| 5 |  pago
++---+
+  |
+  +---- [cancelou?] ----> [estorno no historico]
 ```
 
 Dentro desse trilho, **a IA codificou quase todo o código**. 
@@ -81,15 +103,13 @@ React Query, Zod. Roda local com pnpm + Docker.
 
 ```bash
 pnpm install
-docker compose up -d    # PostgreSQL
+docker compose up -d     # PostgreSQL
 npx prisma db push
 pnpm dev                 # localhost:3000
 ```
 
-Há seed de demonstração pra testar o fluxo completo: montar pedido, concluir,
-registrar pagamento e ver a reconciliação sozinha.
+Há seed de demonstração pra testar o fluxo completo.
 
-**[link do repositório público / demo]**
+**Happy Path**: montar pedido, concluir, registrar pagamento e ver a reconciliação sozinha.
 
-Qual processo seu ainda vive num caderno que não fecha? Talvez caiba em duas
-abas.
+**[Link do Projeto](https://github.com/kodiyak/stouro-offers)**
