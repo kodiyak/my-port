@@ -1,5 +1,7 @@
+import { DownloadIcon } from "lucide-react";
 import Link from "next/link";
 import MyPictures from "@/components/me/my-pictures";
+import { Button } from "@/components/ui/button";
 import { getPosts } from "@/lib/mdx";
 import { getProjects } from "@/lib/projects";
 import ArrowsDown from "./_components/arrows-down";
@@ -24,6 +26,34 @@ export default async function Home() {
           <Intro />
           <ArrowsDown className="absolute -left-12 bottom-0" />
           <ArrowsDown className="absolute -right-12 bottom-0" />
+        </div>
+        <div className="flex h-10 border-t border-dashed">
+          <div className="flex items-center gap-3 text-muted-foreground h-full border-r px-6">
+            <DownloadIcon className="size-3.5" />
+            <span className="text-xs">Baixar Curriculo</span>
+          </div>
+          {[
+            {
+              label: "PDF",
+              href: "/resume.pdf",
+            },
+            {
+              label: "DOCX",
+              href: "/resume.docx",
+            },
+          ].map((item) => (
+            <Button
+              key={item.label}
+              variant={"outline"}
+              nativeButton={false}
+              className={
+                "h-full border-0 border-r border-dashed rounded-none flex-1 bg-transparent dark:bg-transparent last:border-r-0"
+              }
+              render={<Link href={item.href} download />}
+            >
+              <span className="text-xs">{item.label}</span>
+            </Button>
+          ))}
         </div>
         <MiniTitle
           className="border-t"

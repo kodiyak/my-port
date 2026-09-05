@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 const fontSerif = Fraunces({
   variable: "--font-serif",
-  weight: ["200", "400", "800"],
+  weight: ["200", "400", "600", "800"],
 });
 
 export const metadata: Metadata = {

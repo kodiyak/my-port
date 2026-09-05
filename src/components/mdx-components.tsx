@@ -30,7 +30,7 @@ export function getMDXComponents(components: MDXComponents): MDXComponents {
       <p className="min-h-6 font-light text-base mb-2" {...props} />
     ),
     b: (props) => <b className="font-bold" {...props} />,
-    strong: (props) => <strong className="font-bold" {...props} />,
+    strong: (props) => <strong className="font-semibold" {...props} />,
     pre: (props) => (
       <pre
         className={cn(
