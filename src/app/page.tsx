@@ -28,7 +28,7 @@ export default async function Home() {
           <ArrowsDown className="absolute -right-12 bottom-0" />
         </div>
         <div className="flex h-10 border-t border-dashed">
-          <div className="flex items-center gap-3 text-muted-foreground h-full border-r px-6">
+          <div className="flex items-center gap-3 text-muted-foreground h-full border-r border-dashed px-6">
             <DownloadIcon className="size-3.5" />
             <span className="text-xs">Baixar Curriculo</span>
           </div>
@@ -47,7 +47,7 @@ export default async function Home() {
               variant={"outline"}
               nativeButton={false}
               className={
-                "h-full border-0 border-r border-dashed rounded-none flex-1 bg-transparent dark:bg-transparent last:border-r-0"
+                "h-full border-0 border-r border-dashed border-border dark:border-border rounded-none flex-1 bg-transparent dark:bg-transparent last:border-r-0"
               }
               render={<Link href={item.href} download />}
             >
