@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { publicAssetUrl, type AssetImage } from "@/lib/assets";
 import {
   Carousel,
   CarouselContent,
@@ -6,11 +7,10 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import type { ProjectImage } from "@/lib/projects";
 import { cn } from "@/lib/utils";
 
 // Grid das capturas do projeto. As imagens são descobertas automaticamente
-// da pasta content/projects/<slug>/assets e exibidas em ordem numérica.
+// da pasta public/assets/<slug> e exibidas em ordem numérica.
 export default function ScreensGrid({
   slug,
   name,
@@ -19,7 +19,7 @@ export default function ScreensGrid({
 }: {
   slug: string;
   name: string;
-  images: ProjectImage[];
+  images: AssetImage[];
   className?: string;
 }) {
   return (
@@ -31,7 +31,7 @@ export default function ScreensGrid({
             className="basis-1/5 py-0 px-4 border-r border-dashed last:border-r-0 last:pr-0 last:pl-4"
           >
             <Image
-              src={`/projects/${slug}/assets/${image.name}`}
+              src={publicAssetUrl(slug, image.name)}
               alt={`${name} — captura ${image.name.replace(/\.\w+$/, "")}`}
               width={image.width}
               height={image.height}

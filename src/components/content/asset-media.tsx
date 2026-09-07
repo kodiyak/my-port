@@ -1,7 +1,7 @@
 import type { MDXComponents } from "mdx/types";
 import Image from "next/image";
 import type { VideoHTMLAttributes } from "react";
-import type { AssetImage } from "@/lib/assets";
+import { type AssetImage, publicAssetUrl } from "@/lib/assets";
 import { cn } from "@/lib/utils";
 
 // Índice de assets de um projeto — usado para resolver <AssetImage>/<AssetVideo>
@@ -14,16 +14,14 @@ export type AssetIndex = {
   videos: string[];
 };
 
-export function assetUrl(slug: string, name: string) {
-  return `/projects/${slug}/assets/${encodeURIComponent(name)}`;
-}
-
 const DEFAULT_SIZES = "(max-width: 640px) 100vw, 640px";
 
 // Cria os componentes de mídia com o contexto do projeto: valida o nome do
 // asset, resolve a URL pública e injeta as dimensões reais no next/image.
 export function createAssetMDXComponents(index: AssetIndex): MDXComponents {
-  const imagesByName = new Map(index.images.map((image) => [image.name, image]));
+  const imagesByName = new Map(
+    index.images.map((image) => [image.name, image]),
+  );
   const videos = new Set(index.videos);
 
   const listImages = () =>
@@ -43,7 +41,7 @@ export function createAssetMDXComponents(index: AssetIndex): MDXComponents {
     const image = imagesByName.get(name);
     if (!image) {
       throw new Error(
-        `[AssetImage] "${src}" não é uma imagem de content/projects/${index.slug}/assets/. ` +
+        `[AssetImage] "${src}" não é uma imagem de public/assets/${index.slug}/. ` +
           `Disponíveis: ${listImages()}`,
       );
     }
@@ -69,7 +67,7 @@ export function createAssetMDXComponents(index: AssetIndex): MDXComponents {
     return (
       <figure className={cn("my-4 flex flex-col gap-1", className)}>
         <Image
-          src={assetUrl(index.slug, image.name)}
+          src={publicAssetUrl(index.slug, image.name)}
           alt={alt}
           width={image.width}
           height={image.height}
@@ -100,7 +98,7 @@ export function createAssetMDXComponents(index: AssetIndex): MDXComponents {
     const name = basename(src);
     if (!videos.has(name)) {
       throw new Error(
-        `[AssetVideo] "${src}" não é um vídeo de content/projects/${index.slug}/assets/. ` +
+        `[AssetVideo] "${src}" não é um vídeo de public/assets/${index.slug}/. ` +
           `Disponíveis: ${listVideos()}`,
       );
     }
@@ -111,26 +109,26 @@ export function createAssetMDXComponents(index: AssetIndex): MDXComponents {
       const image = imagesByName.get(posterName);
       if (!image) {
         throw new Error(
-          `[AssetVideo poster] "${poster}" não é uma imagem de content/projects/${index.slug}/assets/. ` +
+          `[AssetVideo poster] "${poster}" não é uma imagem de public/assets/${index.slug}/. ` +
             `Disponíveis: ${listImages()}`,
         );
       }
-      posterUrl = assetUrl(index.slug, posterName);
+      posterUrl = publicAssetUrl(index.slug, posterName);
     }
 
     return (
-      <figure className={cn("my-4 flex flex-col gap-1", className)}>
+      <figure className={cn("my-4 flex flex-col -mx-8", className)}>
         <video
-          src={assetUrl(index.slug, name)}
+          src={publicAssetUrl(index.slug, name)}
           poster={posterUrl}
           controls
           preload="metadata"
           playsInline
-          className="w-full h-auto border-y border-dashed bg-black"
+          className="w-full h-auto border-y border-dashed bg-background"
           {...videoProps}
         />
         {caption ? (
-          <figcaption className="px-1 text-xs font-mono text-muted-foreground">
+          <figcaption className="px-8 py-2 border-b border-dashed text-xs font-mono text-muted-foreground">
             {caption}
           </figcaption>
         ) : null}
@@ -138,5 +136,33 @@ export function createAssetMDXComponents(index: AssetIndex): MDXComponents {
     );
   }
 
-  return { AssetImage, AssetVideo };
+  // Markdown puro (![alt](src)) dentro do MDX de projeto: passa pelo mesmo
+  // resolver do <AssetImage> — next/image com dimensões reais lidas do disco.
+  function MarkdownImage({
+    src,
+    alt = "",
+    className,
+  }: {
+    src?: string;
+    alt?: string;
+    className?: string;
+  }) {
+    if (!src) return null;
+    const image = resolveImageName(src);
+    return (
+      <Image
+        src={publicAssetUrl(index.slug, image.name)}
+        alt={alt}
+        width={image.width}
+        height={image.height}
+        sizes={DEFAULT_SIZES}
+        className={cn(
+          "w-full h-auto my-2 border-y border-dashed object-contain",
+          className,
+        )}
+      />
+    );
+  }
+
+  return { AssetImage, AssetVideo, img: MarkdownImage };
 }

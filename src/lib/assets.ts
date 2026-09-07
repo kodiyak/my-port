@@ -1,28 +1,18 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { PROJECTS_PATH } from "@/lib/content";
 
 // Extensões de imagem/vídeo reconhecidas como assets de projeto.
 const IMAGE_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".webp", ".gif"]);
 const VIDEO_EXTENSIONS = new Set([".mp4", ".webm", ".ogv", ".ogg"]);
 
-// MIME por extensão — usado pela rota que serve os assets no runtime.
-export const MIME_BY_EXTENSION: Record<string, string> = {
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".webp": "image/webp",
-  ".gif": "image/gif",
-  ".mp4": "video/mp4",
-  ".webm": "video/webm",
-  ".ogv": "video/ogg",
-  ".ogg": "video/ogg",
-};
+// Slug seguro de projeto — usado para montar caminhos de fs e URLs sem
+// risco de traversal.
+const SAFE_SLUG = /^[a-z0-9][a-z0-9._-]*$/i;
 
 // Prefixo reservado para a capa (header) do projeto. Header é IMAGEM apenas:
 // qualquer "header-*" que não seja imagem é ignorado pelas buscas (e nunca
 // aparece no carrossel de capturas).
-export const HEADER_PREFIX = "header-";
+const HEADER_PREFIX = "header-";
 
 export type AssetImage = {
   name: string;
@@ -39,20 +29,28 @@ export type ProjectAssets = {
   videos: string[];
 };
 
-export function isImageFile(name: string) {
+function isImageFile(name: string) {
   return IMAGE_EXTENSIONS.has(path.extname(name).toLowerCase());
 }
 
-export function isVideoFile(name: string) {
+function isVideoFile(name: string) {
   return VIDEO_EXTENSIONS.has(path.extname(name).toLowerCase());
 }
 
-export function isHeaderFile(name: string) {
+function isHeaderFile(name: string) {
   return name.toLowerCase().startsWith(HEADER_PREFIX) && isImageFile(name);
 }
 
-export function assetsDirFor(slug: string) {
-  return path.join(PROJECTS_PATH, slug, "assets");
+// Assets de projeto vivem em public/assets/<slug> (estáticos, servidos pelo
+// Next/Netlify direto — sem route handler). O slug é o elo com o conteúdo em
+// src/content/projects/<slug>/index.mdx.
+function assetsDirFor(slug: string) {
+  return path.join(process.cwd(), "public", "assets", slug);
+}
+
+// URL pública de um asset: /assets/<slug>/<arquivo>.
+export function publicAssetUrl(slug: string, name: string) {
+  return `/assets/${slug}/${encodeURIComponent(name)}`;
 }
 
 // ---- Leitura de dimensões intrínsecas (PNG/JPEG/GIF/WebP) direto do
@@ -168,12 +166,16 @@ async function readImageSize(
   }
 }
 
-// Lista e categoriza os assets de content/projects/<slug>/assets:
+// Lista e categoriza os assets de public/assets/<slug>:
 // - header: primeira imagem "header-*" (a capa do projeto);
 // - screenshots: imagens numeradas (001.png, 002.png, ...), que alimentam o
 //   carrossel — exclui header-* e vídeos;
 // - videos: arquivos de vídeo, para uso explícito no MDX via <AssetVideo>.
 export async function getProjectAssets(slug: string): Promise<ProjectAssets> {
+  if (!SAFE_SLUG.test(slug)) {
+    return { header: null, screenshots: [], videos: [] };
+  }
+
   const dir = assetsDirFor(slug);
 
   let files: string[] = [];

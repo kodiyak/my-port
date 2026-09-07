@@ -1,12 +1,13 @@
-import { ArrowLeftIcon } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { getProjectAssets } from "@/lib/assets";
+import { getProjectAssets, publicAssetUrl } from "@/lib/assets";
 import { renderProjectMDX } from "@/lib/mdx";
 import { getProject, getProjects } from "@/lib/projects";
+import { cn } from "@/lib/utils";
 import ScreensGrid from "../_components/screens-grid";
+
+const CONTENT_CLASSNAME =
+  "flex flex-col max-w-xl border-x border-dashed w-full mx-auto";
 
 export async function generateStaticParams() {
   const projects = await getProjects();
@@ -26,36 +27,25 @@ export default async function Page({ params }: PageProps<"/projects/[slug]">) {
 
     return (
       <div className="flex flex-col">
-        <div className="flex flex-col max-w-xl border-x border-dashed w-full mx-auto">
-          <div className="h-14 border-b border-dashed flex items-center px-8">
-            <Button
-              variant={"outline"}
-              render={<Link href={"/"} />}
-              nativeButton={false}
-            >
-              <ArrowLeftIcon />
-              <span>Voltar</span>
-            </Button>
-            <div className="flex-1 border-l px-8 flex items-center">
-              <span className="text-xs font-mono"></span>
-            </div>
-          </div>
+        <div className={cn("w-full h-[60vh] relative border-dashed")}>
           {header ? (
             <Image
-              src={`/projects/${slug}/assets/${header.name}`}
+              src={publicAssetUrl(slug, header.name)}
               alt={`${project.name} — capa`}
               width={header.width}
               height={header.height}
               sizes="100vw"
               priority
-              className="w-full h-auto border-b border-dashed object-cover"
+              className="size-full object-cover absolute z-10"
             />
           ) : null}
-          <div className="flex flex-col font-serif gap-2 py-4 px-8">
-            <h2 className="text-3xl font-black">{project.name}</h2>
-            <p className="text-sm text-muted-foreground font-semibold">
-              {project.description}
-            </p>
+          <div className="absolute bottom-0 left-0 w-full z-20 bg-linear-to-b from-transparent to-background pt-32">
+            <div className="flex flex-col font-serif gap-3 py-4 px-8">
+              <h2 className="text-5xl">{project.name}</h2>
+              <p className="text-2xl font-light text-muted-foreground">
+                {project.description}
+              </p>
+            </div>
           </div>
         </div>
         {screenshots.length > 0 ? (
@@ -66,7 +56,7 @@ export default async function Page({ params }: PageProps<"/projects/[slug]">) {
             images={screenshots}
           />
         ) : null}
-        <div className="flex flex-col max-w-xl min-h-dvh border-x border-dashed w-full mx-auto">
+        <div className={cn(CONTENT_CLASSNAME)}>
           <article className="flex flex-col font-serif p-8">
             <Component />
           </article>

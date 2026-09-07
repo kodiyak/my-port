@@ -15,16 +15,6 @@ export function getMDXComponents(components: MDXComponents): MDXComponents {
         {children}
       </Link>
     ),
-    // Imagens de Markdown puro (![alt](src)) não têm width/height — o
-    // next/image exigiria dimensões, então usamos <img> nativo responsivo.
-    // Para imagem otimizada dentro de projetos, use <AssetImage>.
-    img: (props) => (
-      <img
-        loading="lazy"
-        className="w-full h-auto my-2"
-        {...props}
-      />
-    ),
     h1: (props) => <h1 className="text-xl mt-6 mb-2 font-bold" {...props} />,
     h2: (props) => <h2 className="text-lg mt-5 mb-2 font-bold" {...props} />,
     h3: (props) => <h3 className="text-base mt-4 mb-2 font-bold" {...props} />,

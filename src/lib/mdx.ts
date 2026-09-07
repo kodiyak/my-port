@@ -2,11 +2,11 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { evaluate } from "@mdx-js/mdx";
 import matter from "gray-matter";
+import type { MDXComponents } from "mdx/types";
 import * as runtime from "react/jsx-runtime";
 import rehypePrettyCode from "rehype-pretty-code";
 import remarkGfm from "remark-gfm";
 import { z } from "zod";
-import type { MDXComponents } from "mdx/types";
 import { createAssetMDXComponents } from "@/components/content/asset-media";
 import { getMDXComponents } from "@/components/mdx-components";
 import { getProjectAssets } from "@/lib/assets";
@@ -144,7 +144,7 @@ export async function renderMDX(folder: string, slug: string) {
 
 // Renderiza o index.mdx de um projeto (content/projects/<slug>/index.mdx),
 // com os componentes de mídia (<AssetImage>/<AssetVideo>) resolvidos para os
-// assets reais da pasta content/projects/<slug>/assets.
+// assets reais de public/assets/<slug>.
 export async function renderProjectMDX(slug: string) {
   const filePath = path.join(PROJECTS_PATH, slug, "index.mdx");
   const fileContent = await fs.readFile(filePath, "utf-8");

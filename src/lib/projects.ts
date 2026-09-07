@@ -2,7 +2,6 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import matter from "gray-matter";
 import { z } from "zod";
-import { getProjectAssets, type AssetImage } from "@/lib/assets";
 import { PROJECTS_PATH } from "@/lib/content";
 
 const ProjectSchema = z.object({
@@ -12,12 +11,9 @@ const ProjectSchema = z.object({
 });
 export type Project = z.infer<typeof ProjectSchema>;
 
-// Reexporta o shape de imagem usado pela UI (ScreensGrid etc.) e o agregado
-// completo de assets do projeto (capa + capturas + vídeos).
-export type { AssetImage as ProjectImage } from "@/lib/assets";
-export type { ProjectAssets } from "@/lib/assets";
-
-// 1. Lista os projetos: cada subpasta de content/projects com um index.mdx.
+// Lista os projetos: cada subpasta de content/projects com um index.mdx.
+// Os assets de cada um ficam em public/assets/<slug> e são resolvidos por
+// getProjectAssets() em @/lib/assets.
 export async function getProjects(): Promise<Project[]> {
   const projects: Project[] = [];
 
@@ -53,11 +49,4 @@ export async function getProject(slug: string): Promise<Project> {
     throw new Error(`Project with slug "${slug}" not found.`);
   }
   return project;
-}
-
-// 2. Capturas do projeto (imagens numeradas, sem a capa header-* e sem
-// vídeos) em ordem numérica, já com as dimensões de cada uma — é o conteúdo
-// do carrossel/ScreensGrid.
-export async function getProjectImages(slug: string): Promise<AssetImage[]> {
-  return (await getProjectAssets(slug)).screenshots;
 }
