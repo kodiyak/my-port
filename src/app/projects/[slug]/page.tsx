@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getProjectAssets, publicAssetUrl } from "@/lib/assets";
@@ -8,6 +9,37 @@ import ScreensGrid from "../_components/screens-grid";
 
 const CONTENT_CLASSNAME =
   "flex flex-col max-w-xl border-x border-dashed w-full mx-auto";
+
+export async function generateMetadata({
+  params,
+}: PageProps<"/projects/[slug]">): Promise<Metadata> {
+  const { slug } = await params;
+
+  try {
+    const project = await getProject(slug);
+    const { header } = await getProjectAssets(slug);
+    return {
+      title: project.name,
+      description: project.description,
+      openGraph: {
+        title: project.name,
+        description: project.description,
+        images: header
+          ? [
+              {
+                url: publicAssetUrl(slug, header.name),
+                width: header.width,
+                height: header.height,
+                alt: `${project.name} — capa`,
+              },
+            ]
+          : undefined,
+      },
+    };
+  } catch {
+    return {};
+  }
+}
 
 export async function generateStaticParams() {
   const projects = await getProjects();
@@ -27,7 +59,7 @@ export default async function Page({ params }: PageProps<"/projects/[slug]">) {
 
     return (
       <div className="flex flex-col">
-        <div className={cn("w-full h-[60vh] relative border-dashed")}>
+        <div className="w-full h-[60vh] relative">
           {header ? (
             <Image
               src={publicAssetUrl(slug, header.name)}

@@ -56,7 +56,7 @@ export default async function Home() {
           ))}
         </div>
         <MiniTitle
-          className="border-t"
+          className="border-t border-dashed"
           actions={
             <Link
               className="text-[10px] font-mono font-semibold text-muted-foreground hover:text-foreground hover:underline"
@@ -71,11 +71,11 @@ export default async function Home() {
           Pictures
         </MiniTitle>
         <MyPictures />
-        <MiniTitle className="border-t">Projects</MiniTitle>
+        <MiniTitle className="border-t border-dashed">Projects</MiniTitle>
         <ProjectsPosts projects={projects} />
-        <MiniTitle className="border-t">Notes</MiniTitle>
+        <MiniTitle className="border-t border-dashed">Notes</MiniTitle>
         <NotesPosts posts={notes} />
-        <MiniTitle className="border-t">Blog</MiniTitle>
+        <MiniTitle className="border-t border-dashed">Blog</MiniTitle>
         <div className="flex flex-col">
           <BlogPosts posts={posts} />
         </div>

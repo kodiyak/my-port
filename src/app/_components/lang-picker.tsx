@@ -11,7 +11,7 @@ export default function LangPicker({
   onChange: (lang: string) => void;
 }) {
   return (
-    <div className="flex border-b p-2">
+    <div className="flex border-b border-dashed p-2">
       {LANGUAGES.map((l) => (
         <Button
           key={`lang.${l}`}
