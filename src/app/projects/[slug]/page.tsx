@@ -1,10 +1,11 @@
 import { ArrowLeftIcon } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { getProjectAssets } from "@/lib/assets";
 import { renderProjectMDX } from "@/lib/mdx";
-import { getProject, getProjectImages, getProjects } from "@/lib/projects";
+import { getProject, getProjects } from "@/lib/projects";
 import ScreensGrid from "../_components/screens-grid";
 
 export async function generateStaticParams() {
@@ -16,11 +17,12 @@ export default async function Page({ params }: PageProps<"/projects/[slug]">) {
   const { slug } = await params;
 
   try {
-    const [project, images, { Component }] = await Promise.all([
+    const [project, assets, { Component }] = await Promise.all([
       getProject(slug),
-      getProjectImages(slug),
+      getProjectAssets(slug),
       renderProjectMDX(slug),
     ]);
+    const { header, screenshots } = assets;
 
     return (
       <div className="flex flex-col">
@@ -38,6 +40,17 @@ export default async function Page({ params }: PageProps<"/projects/[slug]">) {
               <span className="text-xs font-mono"></span>
             </div>
           </div>
+          {header ? (
+            <Image
+              src={`/projects/${slug}/assets/${header.name}`}
+              alt={`${project.name} — capa`}
+              width={header.width}
+              height={header.height}
+              sizes="100vw"
+              priority
+              className="w-full h-auto border-b border-dashed object-cover"
+            />
+          ) : null}
           <div className="flex flex-col font-serif gap-2 py-4 px-8">
             <h2 className="text-3xl font-black">{project.name}</h2>
             <p className="text-sm text-muted-foreground font-semibold">
@@ -45,12 +58,12 @@ export default async function Page({ params }: PageProps<"/projects/[slug]">) {
             </p>
           </div>
         </div>
-        {images.length > 0 ? (
+        {screenshots.length > 0 ? (
           <ScreensGrid
             className="flex flex-row h-124 border-y border-dashed"
             slug={slug}
             name={project.name}
-            images={images}
+            images={screenshots}
           />
         ) : null}
         <div className="flex flex-col max-w-xl min-h-dvh border-x border-dashed w-full mx-auto">

@@ -1,0 +1,142 @@
+import type { MDXComponents } from "mdx/types";
+import Image from "next/image";
+import type { VideoHTMLAttributes } from "react";
+import type { AssetImage } from "@/lib/assets";
+import { cn } from "@/lib/utils";
+
+// Índice de assets de um projeto — usado para resolver <AssetImage>/<AssetVideo>
+// escritos no MDX para o arquivo físico e as dimensões reais.
+export type AssetIndex = {
+  slug: string;
+  /** Todas as imagens do projeto (header-* + capturas). */
+  images: AssetImage[];
+  /** Nomes dos arquivos de vídeo do projeto. */
+  videos: string[];
+};
+
+export function assetUrl(slug: string, name: string) {
+  return `/projects/${slug}/assets/${encodeURIComponent(name)}`;
+}
+
+const DEFAULT_SIZES = "(max-width: 640px) 100vw, 640px";
+
+// Cria os componentes de mídia com o contexto do projeto: valida o nome do
+// asset, resolve a URL pública e injeta as dimensões reais no next/image.
+export function createAssetMDXComponents(index: AssetIndex): MDXComponents {
+  const imagesByName = new Map(index.images.map((image) => [image.name, image]));
+  const videos = new Set(index.videos);
+
+  const listImages = () =>
+    index.images.length > 0
+      ? index.images.map((image) => image.name).join(", ")
+      : "(nenhuma imagem)";
+  const listVideos = () =>
+    videos.size > 0 ? [...videos].join(", ") : "(nenhum vídeo)";
+
+  function basename(src: string) {
+    const withoutQuery = src.split(/[?#]/)[0] ?? src;
+    return withoutQuery.split("/").pop() ?? "";
+  }
+
+  function resolveImageName(src: string) {
+    const name = basename(src);
+    const image = imagesByName.get(name);
+    if (!image) {
+      throw new Error(
+        `[AssetImage] "${src}" não é uma imagem de content/projects/${index.slug}/assets/. ` +
+          `Disponíveis: ${listImages()}`,
+      );
+    }
+    return image;
+  }
+
+  function AssetImage({
+    src,
+    alt = "",
+    caption,
+    className,
+    sizes = DEFAULT_SIZES,
+    priority = false,
+  }: {
+    src: string;
+    alt?: string;
+    caption?: string;
+    className?: string;
+    sizes?: string;
+    priority?: boolean;
+  }) {
+    const image = resolveImageName(src);
+    return (
+      <figure className={cn("my-4 flex flex-col gap-1", className)}>
+        <Image
+          src={assetUrl(index.slug, image.name)}
+          alt={alt}
+          width={image.width}
+          height={image.height}
+          sizes={sizes}
+          priority={priority}
+          className="w-full h-auto border-y border-dashed object-contain"
+        />
+        {caption ? (
+          <figcaption className="px-1 text-xs font-mono text-muted-foreground">
+            {caption}
+          </figcaption>
+        ) : null}
+      </figure>
+    );
+  }
+
+  function AssetVideo({
+    src,
+    poster,
+    caption,
+    className,
+    ...videoProps
+  }: VideoHTMLAttributes<HTMLVideoElement> & {
+    src: string;
+    poster?: string;
+    caption?: string;
+  }) {
+    const name = basename(src);
+    if (!videos.has(name)) {
+      throw new Error(
+        `[AssetVideo] "${src}" não é um vídeo de content/projects/${index.slug}/assets/. ` +
+          `Disponíveis: ${listVideos()}`,
+      );
+    }
+
+    let posterUrl: string | undefined;
+    if (poster) {
+      const posterName = basename(poster);
+      const image = imagesByName.get(posterName);
+      if (!image) {
+        throw new Error(
+          `[AssetVideo poster] "${poster}" não é uma imagem de content/projects/${index.slug}/assets/. ` +
+            `Disponíveis: ${listImages()}`,
+        );
+      }
+      posterUrl = assetUrl(index.slug, posterName);
+    }
+
+    return (
+      <figure className={cn("my-4 flex flex-col gap-1", className)}>
+        <video
+          src={assetUrl(index.slug, name)}
+          poster={posterUrl}
+          controls
+          preload="metadata"
+          playsInline
+          className="w-full h-auto border-y border-dashed bg-black"
+          {...videoProps}
+        />
+        {caption ? (
+          <figcaption className="px-1 text-xs font-mono text-muted-foreground">
+            {caption}
+          </figcaption>
+        ) : null}
+      </figure>
+    );
+  }
+
+  return { AssetImage, AssetVideo };
+}

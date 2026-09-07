@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import matter from "gray-matter";
 import { z } from "zod";
+import { getProjectAssets, type AssetImage } from "@/lib/assets";
 import { PROJECTS_PATH } from "@/lib/content";
 
 const ProjectSchema = z.object({
@@ -11,38 +12,10 @@ const ProjectSchema = z.object({
 });
 export type Project = z.infer<typeof ProjectSchema>;
 
-export type ProjectImage = {
-  name: string;
-  width: number;
-  height: number;
-};
-
-// Formato de imagem suportado pelo grid. Para adicionar outros, basta
-// ampliar o conjunto e implementar a leitura de dimensões correspondente.
-const SUPPORTED_IMAGE_EXTENSIONS = new Set([".png"]);
-
-const PNG_MAGIC = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
-
-// Lê as dimensões intrínsecas de um PNG direto do cabeçalho (IHDR), sem
-// depender de bibliotecas — necessário para o next/image reservar espaço.
-async function readPngSize(
-  filePath: string,
-): Promise<Omit<ProjectImage, "name"> | null> {
-  const handle = await fs.open(filePath, "r");
-  try {
-    const buffer = Buffer.alloc(24);
-    const { bytesRead } = await handle.read(buffer, 0, 24, 0);
-    if (bytesRead < 24) return null;
-
-    const isPng = PNG_MAGIC.every((byte, i) => buffer[i] === byte);
-    const hasIHDR = buffer.toString("ascii", 12, 16) === "IHDR";
-    if (!isPng || !hasIHDR) return null;
-
-    return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
-  } finally {
-    await handle.close();
-  }
-}
+// Reexporta o shape de imagem usado pela UI (ScreensGrid etc.) e o agregado
+// completo de assets do projeto (capa + capturas + vídeos).
+export type { AssetImage as ProjectImage } from "@/lib/assets";
+export type { ProjectAssets } from "@/lib/assets";
 
 // 1. Lista os projetos: cada subpasta de content/projects com um index.mdx.
 export async function getProjects(): Promise<Project[]> {
@@ -82,30 +55,9 @@ export async function getProject(slug: string): Promise<Project> {
   return project;
 }
 
-// 2. Lista as imagens de content/projects/<slug>/assets em ordem numérica
-// (001.png, 002.png, ..., 010.png), já com as dimensões de cada uma.
-export async function getProjectImages(slug: string): Promise<ProjectImage[]> {
-  const assetsPath = path.join(PROJECTS_PATH, slug, "assets");
-
-  let files: string[];
-  try {
-    files = await fs.readdir(assetsPath);
-  } catch {
-    // Projeto sem pasta de imagens.
-    return [];
-  }
-
-  const images: ProjectImage[] = [];
-  const candidates = files
-    .filter((file) =>
-      SUPPORTED_IMAGE_EXTENSIONS.has(path.extname(file).toLowerCase()),
-    )
-    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-
-  for (const name of candidates) {
-    const size = await readPngSize(path.join(assetsPath, name));
-    if (size) images.push({ name, ...size });
-  }
-
-  return images;
+// 2. Capturas do projeto (imagens numeradas, sem a capa header-* e sem
+// vídeos) em ordem numérica, já com as dimensões de cada uma — é o conteúdo
+// do carrossel/ScreensGrid.
+export async function getProjectImages(slug: string): Promise<AssetImage[]> {
+  return (await getProjectAssets(slug)).screenshots;
 }

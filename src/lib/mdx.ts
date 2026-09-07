@@ -6,7 +6,10 @@ import * as runtime from "react/jsx-runtime";
 import rehypePrettyCode from "rehype-pretty-code";
 import remarkGfm from "remark-gfm";
 import { z } from "zod";
+import type { MDXComponents } from "mdx/types";
+import { createAssetMDXComponents } from "@/components/content/asset-media";
 import { getMDXComponents } from "@/components/mdx-components";
+import { getProjectAssets } from "@/lib/assets";
 import { CONTENT_PATH, PROJECTS_PATH } from "@/lib/content";
 
 const POST_TYPES = ["blog", "notes"] as const;
@@ -94,11 +97,12 @@ export async function getPost(slug: string) {
 }
 
 // Avalia um source MDX com a mesma configuração de componentes, remark e
-// rehype usada em todo o site.
-async function evaluateMDX(source: string) {
+// rehype usada em todo o site. `components` são os componentes extras
+// disponíveis para tags customizadas (ex.: <AssetImage>/<AssetVideo>).
+async function evaluateMDX(source: string, components: MDXComponents = {}) {
   const { default: MDXComponent } = await evaluate(source, {
     ...runtime,
-    useMDXComponents: () => getMDXComponents({}),
+    useMDXComponents: () => getMDXComponents(components),
     remarkPlugins: [remarkGfm],
     rehypePlugins: [
       [
@@ -138,14 +142,25 @@ export async function renderMDX(folder: string, slug: string) {
   };
 }
 
-// Renderiza o index.mdx de um projeto (content/projects/<slug>/index.mdx).
+// Renderiza o index.mdx de um projeto (content/projects/<slug>/index.mdx),
+// com os componentes de mídia (<AssetImage>/<AssetVideo>) resolvidos para os
+// assets reais da pasta content/projects/<slug>/assets.
 export async function renderProjectMDX(slug: string) {
   const filePath = path.join(PROJECTS_PATH, slug, "index.mdx");
   const fileContent = await fs.readFile(filePath, "utf-8");
   const { content, data } = matter(fileContent);
 
+  const assets = await getProjectAssets(slug);
+  const mdxComponents = createAssetMDXComponents({
+    slug,
+    images: assets.header
+      ? [assets.header, ...assets.screenshots]
+      : assets.screenshots,
+    videos: assets.videos,
+  });
+
   return {
-    Component: await evaluateMDX(content),
+    Component: await evaluateMDX(content, mdxComponents),
     frontmatter: data,
   };
 }

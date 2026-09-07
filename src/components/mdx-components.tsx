@@ -1,5 +1,4 @@
 import type { MDXComponents } from "mdx/types";
-import Image, { type ImageProps } from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Separator } from "./ui/separator";
@@ -16,11 +15,14 @@ export function getMDXComponents(components: MDXComponents): MDXComponents {
         {children}
       </Link>
     ),
+    // Imagens de Markdown puro (![alt](src)) não têm width/height — o
+    // next/image exigiria dimensões, então usamos <img> nativo responsivo.
+    // Para imagem otimizada dentro de projetos, use <AssetImage>.
     img: (props) => (
-      <Image
-        sizes="100vw"
-        style={{ width: "100%", height: "auto" }}
-        {...(props as ImageProps)}
+      <img
+        loading="lazy"
+        className="w-full h-auto my-2"
+        {...props}
       />
     ),
     h1: (props) => <h1 className="text-xl mt-6 mb-2 font-bold" {...props} />,

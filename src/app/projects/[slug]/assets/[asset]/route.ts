@@ -1,23 +1,21 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { MIME_BY_EXTENSION } from "@/lib/assets";
 import { PROJECTS_PATH } from "@/lib/content";
-
-const MIME_BY_EXTENSION: Record<string, string> = {
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".webp": "image/webp",
-  ".gif": "image/gif",
-};
 
 // Nome de segmento de URL seguro: evita traversal ("..", "/" etc.).
 const SAFE_SEGMENT = /^[a-z0-9][a-z0-9._-]*$/i;
 
+const CACHE_CONTROL =
+  process.env.NODE_ENV === "production"
+    ? "public, max-age=31536000, immutable"
+    : "public, max-age=0, must-revalidate";
+
 // Serve os assets de content/projects/<slug>/assets/<arquivo> no runtime,
-// permitindo que a página do projeto liste e exiba as imagens sem
-// hardcode e que o next/image as otimize normalmente.
+// permitindo que o next/image as otimize normalmente e que <video> faça seek
+// via HTTP Range (206 Partial Content).
 export async function GET(
-  _request: Request,
+  request: Request,
   ctx: RouteContext<"/projects/[slug]/assets/[asset]">,
 ) {
   const { slug, asset } = await ctx.params;
@@ -32,21 +30,87 @@ export async function GET(
 
   const filePath = path.join(PROJECTS_PATH, slug, "assets", asset);
 
+  let handle: fs.FileHandle | null = null;
   try {
-    const buffer = await fs.readFile(filePath);
-    const cacheControl =
-      process.env.NODE_ENV === "production"
-        ? "public, max-age=31536000, immutable"
-        : "public, max-age=0, must-revalidate";
-
-    return new Response(buffer, {
-      headers: {
-        "Content-Type": mimeType,
-        "Content-Length": String(buffer.byteLength),
-        "Cache-Control": cacheControl,
-      },
-    });
+    handle = await fs.open(filePath, "r");
   } catch {
     return new Response("Not found", { status: 404 });
   }
+
+  if (!handle) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  try {
+    const { size } = await handle.stat();
+
+    const baseHeaders: Record<string, string> = {
+      "Content-Type": mimeType,
+      "Accept-Ranges": "bytes",
+      "Cache-Control": CACHE_CONTROL,
+    };
+
+    // Suporte a Range (usado por <video> p/ pré-carregar metadata e fazer
+    // seek). Range inválido ou multi-range cai no caso abaixo (arquivo inteiro).
+    const range = request.headers.get("range");
+    const parsedRange = range ? /^bytes=(\d*)-(\d*)$/.exec(range.trim()) : null;
+
+    if (parsedRange) {
+      const [, startRaw, endRaw] = parsedRange;
+      let start: number;
+      let end: number;
+
+      if (startRaw === "") {
+        // "bytes=-N": últimos N bytes do arquivo.
+        const suffix = Number(endRaw);
+        if (!Number.isFinite(suffix) || suffix <= 0 || size === 0) {
+          return rangeError(size);
+        }
+        start = Math.max(size - suffix, 0);
+        end = size - 1;
+      } else {
+        start = Number(startRaw);
+        end = endRaw === "" ? size - 1 : Number(endRaw);
+        if (
+          !Number.isFinite(start) ||
+          !Number.isFinite(end) ||
+          start < 0 ||
+          start >= size ||
+          end < start
+        ) {
+          return rangeError(size);
+        }
+        if (end >= size) end = size - 1;
+      }
+
+      const length = end - start + 1;
+      const buffer = Buffer.alloc(length);
+      const { bytesRead } = await handle.read(buffer, 0, length, start);
+      return new Response(buffer.subarray(0, bytesRead), {
+        status: 206,
+        headers: {
+          ...baseHeaders,
+          "Content-Length": String(bytesRead),
+          "Content-Range": `bytes ${start}-${end}/${size}`,
+        },
+      });
+    }
+
+    const buffer = await handle.readFile();
+    return new Response(buffer, {
+      headers: {
+        ...baseHeaders,
+        "Content-Length": String(buffer.byteLength),
+      },
+    });
+  } finally {
+    await handle.close();
+  }
+}
+
+function rangeError(size: number) {
+  return new Response(null, {
+    status: 416,
+    headers: { "Content-Range": `bytes */${size}` },
+  });
 }
