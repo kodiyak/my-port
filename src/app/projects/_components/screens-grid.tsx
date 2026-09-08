@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { publicAssetUrl, type AssetImage } from "@/lib/assets";
 import {
   Carousel,
   CarouselContent,
@@ -7,6 +6,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { type AssetImage, publicAssetUrl } from "@/lib/assets";
 import { cn } from "@/lib/utils";
 
 // Grid das capturas do projeto. As imagens são descobertas automaticamente
@@ -28,7 +28,7 @@ export default function ScreensGrid({
         {images.map((image) => (
           <CarouselItem
             key={image.name}
-            className="basis-1/5 py-0 px-4 border-r border-dashed last:border-r-0 last:pr-0 last:pl-4"
+            className="basis-1/2 lg:basis-1/5 py-0 px-4 border-r border-dashed last:border-r-0 last:pr-0 last:pl-4"
           >
             <Image
               src={publicAssetUrl(slug, image.name)}

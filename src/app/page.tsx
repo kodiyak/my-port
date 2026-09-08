@@ -24,8 +24,9 @@ export default async function Home() {
         <MiniTitle>Intro</MiniTitle>
         <div className="relative">
           <Intro />
-          <ArrowsDown className="absolute -left-12 bottom-0" />
-          <ArrowsDown className="absolute -right-12 bottom-0" />
+          <div className="h-18 md:hidden"></div>
+          <ArrowsDown className="absolute left-4 md:-left-12 bottom-0" />
+          <ArrowsDown className="absolute right-4 md:-right-12 bottom-0" />
         </div>
         <div className="flex h-10 border-t border-dashed">
           <div className="flex items-center gap-3 text-muted-foreground h-full border-r border-dashed px-6">

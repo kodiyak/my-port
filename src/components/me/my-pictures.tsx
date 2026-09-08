@@ -49,8 +49,14 @@ export default function MyPictures() {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className={"rounded-none"} variant={"secondary"} />
-        <CarouselNext className={"rounded-none"} variant={"secondary"} />
+        <CarouselPrevious
+          className={"left-4 md:-left-14 rounded-none"}
+          variant={"secondary"}
+        />
+        <CarouselNext
+          className={"right-4 md:-right-14 rounded-none"}
+          variant={"secondary"}
+        />
       </Carousel>
     </div>
   );
